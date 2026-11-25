@@ -96,10 +96,6 @@ Use any future expiry (for example `01/39`) and CVC `100`.
 
 **The card form was blank.** The SDK threw `Cannot read properties of undefined (reading 'theme')`. The docs list `interface` as optional, but SDK 1.0.2 crashed without it. I found it in the browser console and fixed it by passing `interface`.
 
-**The merchant-initiated docs contradict themselves.** The text says `threeDSecure` and `customer_initiated` should be false, but the sample sends `threeDSecure: true` and `customer_initiated` as a string. I followed the text and the task.
-
-**The Retrieve Charge sample is missing two IDs.** Its sample response has no `card.id` or `payment_agreement.id`. I checked a real response and stored them from there. The app also tells you if any of the three IDs is missing.
-
 ## Limitations
 
 - Storage is a single `data.json` file with one saved card. Everyone who opens the page sees the same card, and a redeploy clears it. A real merchant would use a database tied to logged-in users.
