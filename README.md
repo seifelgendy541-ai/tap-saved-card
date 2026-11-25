@@ -4,6 +4,10 @@ A small Flask app that takes a card payment with Tap's Web Card SDK v2, saves th
 
 The page is deliberately basic. My focus was the payment flow.
 
+**Live page:** https://tap-saved-card-2297e.containers.snapdeploy.app
+
+It runs on a free host that sleeps when idle, so the first visit can take a minute or two.
+
 ## How the flow works
 
 ### 1. First payment (customer-initiated, with 3DS)
@@ -28,6 +32,17 @@ The home page shows the saved card's brand and last 4 digits. The customer selec
 The payment agreement comes from the first, authenticated payment. It is what allows the later charge to go through without 3DS.
 
 In this demo the customer starts the second payment with a button, and it is sent as merchant-initiated as the task describes. In a real subscription, the merchant's system would trigger it on a schedule.
+
+### 4. Webhook
+
+Both charges send `post.url`, set to `BASE_URL` + `/webhook`. When Tap calls it, the server:
+
+1. Rebuilds the hash string from the charge ID, amount, currency, gateway reference, payment reference, status and created time.
+2. Signs it with HMAC-SHA256 using the secret key.
+3. Compares the result with the `hashstring` header, using a constant-time comparison.
+4. Logs the payload and whether the hash was valid, then replies `200` if it was and `401` if not.
+
+Webhooks only arrive on a public address, not on localhost. On the host, the results show in the log viewer.
 
 ## Charge IDs (sandbox, from a local run)
 
@@ -78,6 +93,7 @@ Use any future expiry (for example `01/39`) and CVC `100`.
 |---|---|
 | `app.py` | Routes, success check, failure message and storage |
 | `tap_client.py` | All calls to Tap's API |
+| `webhook.py` | Hash string and webhook validation |
 | `templates/index.html` | The page |
 | `static/app.js` | Card SDK setup and sending the token |
 
@@ -96,8 +112,11 @@ Use any future expiry (for example `01/39`) and CVC `100`.
 
 **The card form was blank.** The SDK threw `Cannot read properties of undefined (reading 'theme')`. The docs list `interface` as optional, but SDK 1.0.2 crashed without it. I found it in the browser console and fixed it by passing `interface`.
 
+**Returning from 3DS showed "Container not found".** `BASE_URL` on the host didn't match the real live URL. Every redirect is built from it, so fixing the variable and redeploying solved it with no code change.
+
 ## Limitations
 
 - Storage is a single `data.json` file with one saved card. Everyone who opens the page sees the same card, and a redeploy clears it. A real merchant would use a database tied to logged-in users.
 - The customer's details are fixed demo values.
+- The webhook only logs and validates. It does not update anything or handle repeated deliveries.
 - Clicking **Pay with saved card** twice quickly could charge twice. Tap's `reference.idempotent` field is one way to prevent that.

@@ -4,6 +4,7 @@ import json
 from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, render_template, request
 import tap_client
+import webhook
 
 # keys come from .env here, and from the dashboard on the host
 load_dotenv()
@@ -169,6 +170,24 @@ def pay_saved():
 
     save_data(data)
     return redirect("/")
+
+@app.post("/webhook")
+def tap_webhook():
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return "Bad payload", 400
+
+    valid = webhook.is_valid(payload, request.headers.get("hashstring", ""))
+
+    # log what Tap sends: the file, plus the host's log viewer
+    with open("webhooks.log", "a") as file:
+        file.write(json.dumps({"hash_valid": valid, "payload": payload}) + "\n")
+    print("Webhook:", payload.get("id"), payload.get("status"), "hash valid:", valid)
+    print(json.dumps(payload))
+
+    if not valid:
+        return "Invalid hashstring", 401
+    return "OK", 200
 
 if __name__ == "__main__":
     debug = os.getenv("FLASK_DEBUG") == "1"

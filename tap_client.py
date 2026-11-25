@@ -38,6 +38,7 @@ def create_charge(token_id, amount, currency, customer, redirect_url):
         "customer": customer,
         "source": {"id": token_id},
         "redirect": {"url": redirect_url},
+        "post": {"url": os.getenv("BASE_URL") + "/webhook"},
         "merchant": {"id": os.getenv("TAP_MERCHANT_ID")},
         "save_card": True,
         "customer_initiated": True,
@@ -70,6 +71,7 @@ def create_mit_charge(token_id, amount, currency, card, redirect_url):
         "save_card": False,
         "merchant": {"id": os.getenv("TAP_MERCHANT_ID")},
         "redirect": {"url": redirect_url},  # required by the API, even without 3DS
+        "post": {"url": os.getenv("BASE_URL") + "/webhook"},
         "reference": {"transaction": "txn_" + ref, "order": "ord_" + ref},
         "description": "Recurring payment (MIT), saved card, no 3DS",
     })

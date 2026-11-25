@@ -1,1 +1,3 @@
 Card form was blank. The SDK threw "Cannot read properties of undefined (reading 'theme')". The docs list interface as optional, but SDK 1.0.2 crashes without it. Fixed by passing it. Found through the browser console.
+
+Returning from 3DS showed "Container not found". BASE_URL on the host didn't match the real live URL. Every redirect is built from it, so fixing the variable and redeploying solved it with no code change.
