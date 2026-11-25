@@ -1,0 +1,1 @@
+Card form was blank. The SDK threw "Cannot read properties of undefined (reading 'theme')". The docs list interface as optional, but SDK 1.0.2 crashes without it. Fixed by passing it. Found through the browser console.

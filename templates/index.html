@@ -5,7 +5,40 @@
   <title>Tap Checkout</title>
 </head>
 <body>
-  <h1>Tap Checkout</h1>
-  <p>Merchant ID: {{ merchant_id }}</p>
+    <h1>Tap Checkout</h1>
+  <p>Amount: {{ "%.3f"|format(tap_config.amount) }} {{ tap_config.currency }}</p>
+
+  <div id="card-sdk-id"></div>
+  <button id="pay-button">Pay</button>
+  <p id="message">{{ message or "" }}</p>
+
+    {% if card %}
+  <h2>Saved card</h2>
+  <form method="post" action="/pay-saved">
+    <table border="1" cellpadding="6">
+      <tr><th>Select</th><th>Brand</th><th>Card</th></tr>
+      <tr>
+        <td><input type="radio" name="card_id" value="{{ card.card_id }}" required></td>
+        <td>{{ card.brand }}</td>
+        <td>**** {{ card.last_four }}</td>
+      </tr>
+    </table>
+    <p><button>Pay with saved card</button></p>
+  </form>
+  {% endif %}
+
+  {% if cit_charge_id %}
+  <h2>Charge IDs</h2>
+  <table border="1" cellpadding="6">
+    <tr><th>First payment (CIT)</th><td>{{ cit_charge_id }}</td></tr>
+    {% if mit_charge_id %}
+    <tr><th>Recurring payment (MIT)</th><td>{{ mit_charge_id }}</td></tr>
+    {% endif %}
+  </table>
+  {% endif %}
+
+  <script id="tap-config" type="application/json">{{ tap_config|tojson }}</script>
+  <script src="https://tap-sdks.b-cdn.net/card/1.0.2/index.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
